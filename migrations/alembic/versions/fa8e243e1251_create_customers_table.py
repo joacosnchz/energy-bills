@@ -33,7 +33,7 @@ def upgrade() -> None:
         sa.Column("phone", sa.String(255), nullable=True),
         sa.Column("property_owner_id", sa.BigInteger, nullable=False),
         sa.Column("aniversary_day", sa.Integer, nullable=False),
-        sa.Column("move_in", sa.String(255), nullable=False),
+        sa.Column("move_in", sa.String(255), nullable=True),
         sa.Column("move_out_day", sa.Integer, nullable=True),
         sa.Column("devices", sa.String(255), nullable=False),
         sa.Column("stripe_id", sa.String(255), nullable=True),

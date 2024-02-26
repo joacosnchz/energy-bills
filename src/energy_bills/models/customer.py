@@ -1,13 +1,13 @@
 import os
+from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import ForeignKey, create_engine, select
+import sqlalchemy as sa
+from sqlalchemy import ForeignKey, create_engine, select, update
 from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
 from energy_bills.models.base import Base
 from energy_bills.models.property_owner import PropertyOwner
-from datetime import datetime
-import sqlalchemy as sa
 
 
 class Customer(Base):
@@ -30,12 +30,23 @@ class Customer(Base):
     property_owner: Mapped["PropertyOwner"] = relationship(lazy=True)
 
     @classmethod
-    def create(cls, customer: "Customer") -> None:
+    def upsert(cls, customer: dict) -> None:
+        """Creates customer if not exists, updates it otherwise"""
+
         engine = create_engine(os.getenv("DB_URI"))
         with Session(engine) as session:
-            stmt = select(Customer).where(cls.email == customer.email)
+            stmt = select(cls).where(cls.email == customer["email"])
             existing = session.scalars(stmt).first()
 
             if not existing:
-                session.add(customer)
+                session.add(Customer(**customer))
+                session.commit()
+            else:
+                existing.updated_at = datetime.now()
+                stmt = (
+                    update(cls)
+                    .where(cls.email == customer["email"])
+                    .values(**customer)
+                )
+                session.execute(stmt)
                 session.commit()
