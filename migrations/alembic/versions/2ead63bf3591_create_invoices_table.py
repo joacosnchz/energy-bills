@@ -13,8 +13,8 @@ from sqlalchemy.schema import CreateSequence, DropSequence
 
 
 # revision identifiers, used by Alembic.
-revision: str = '2ead63bf3591'
-down_revision: Union[str, None] = 'fa8e243e1251'
+revision: str = "2ead63bf3591"
+down_revision: Union[str, None] = "fa8e243e1251"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -30,9 +30,11 @@ def upgrade() -> None:
         sa.Column("invoice_date", sa.Date, nullable=False),
         sa.Column("amount", sa.Float, nullable=False),
         sa.Column("kwh_consumed", sa.Float, nullable=False),
+        sa.Column("kwh_rate", sa.Float, nullable=False),
         sa.Column("customer_id", sa.BigInteger, nullable=False),
-        sa.Column("stripe_id", sa.String(255), nullable=True),
-        sa.Column("link", sa.String(255), nullable=True),
+        sa.Column("stripe_id", sa.String(255), nullable=False),
+        sa.Column("link", sa.String(255), nullable=False),
+        sa.Column("sent_at", sa.DateTime, nullable=True),
     )
 
     op.create_foreign_key("fk_customer_invoice", "invoices", "customers", ["customer_id"], ["id"])
