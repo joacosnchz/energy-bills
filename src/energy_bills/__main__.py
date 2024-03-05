@@ -6,6 +6,7 @@ from energy_bills.controllers.usages import Usages
 
 logging.basicConfig(level=logging.INFO)
 
+
 if __name__ == "__main__":
     job = os.getenv("JOB")
 
