@@ -29,12 +29,10 @@ def upgrade() -> None:
         sa.Column("id", sa.BigInteger, id_seq, server_default=id_seq.next_value(), nullable=False, primary_key=True),
         sa.Column("usage_date", sa.Date, nullable=False, server_default=sa.func.current_date()),
         sa.Column("kwh_consumed", sa.Float, nullable=False),
-        sa.Column("customer_id", sa.BigInteger, nullable=False),
+        sa.Column("device_id", sa.BigInteger, nullable=False),
         sa.Column("created_at", sa.DateTime, nullable=False, server_default=sa.func.current_timestamp()),
         sa.Column("updated_at", sa.DateTime, nullable=False, server_default=sa.func.current_timestamp()),
     )
-
-    op.create_foreign_key("fk_customer_usage", "usage", "customers", ["customer_id"], ["id"])
 
 
 def downgrade() -> None:

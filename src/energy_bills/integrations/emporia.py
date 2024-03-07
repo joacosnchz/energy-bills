@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -15,6 +16,8 @@ class Emporia:
         self.password = password if password else os.getenv("EMPORIA_PWD")
 
     def get_devices(self) -> list | None:
+        time.sleep(0.1)  # Sleeps a bit to avoid throttle
+
         r = requests.get(f"{self.BASE_URL}/devices", auth=HTTPBasicAuth(self.username, self.password))
 
         if r.status_code == 200:
@@ -25,6 +28,8 @@ class Emporia:
     def get_historical_usage(
             self, device: int, channel: str, start: str, end: str, scale: str, unit: str
     ) -> dict | None:
+        time.sleep(0.1)  # Sleeps a bit to avoid throttle
+
         request_url = (
             f"{self.BASE_URL}/devices/{device}/channels/{channel}/historical-usage"
             f"?start={start}&end={end}&scale={scale}&unit={unit}"
