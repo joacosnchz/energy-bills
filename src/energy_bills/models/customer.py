@@ -31,11 +31,11 @@ class Customer(Base):
 
     property_owner: Mapped["PropertyOwner"] = relationship(lazy=True)
 
-    def get_device_list(self, active_devices: list[int]) -> list[int]:
+    def filter_devices(self, active_devices: list) -> list:
         """Get list of active devices from customer"""
-        customer_devices = [int(d) for d in self.devices.split(",")]
+        customer_devices = self.devices.split(",")
 
-        return [d for d in customer_devices if d in active_devices]
+        return [d for d in active_devices if str(d["deviceGid"]) in customer_devices]
 
     @classmethod
     def get_all(cls) -> List["Customer"]:
@@ -66,3 +66,20 @@ class Customer(Base):
                 )
                 session.execute(stmt)
                 session.commit()
+
+    @classmethod
+    def get_active_customers(cls, interval_end: date) -> List["Customer"]:
+        """Get customers using energy on a date"""
+
+        engine = create_engine(os.getenv("DB_URI"))
+        session = Session(engine)
+        stmt = (
+            select(cls)
+            .where(cls.move_in_date <= interval_end)
+            .where(sa.or_(
+                cls.move_out_date.is_(None),
+                cls.move_out_date >= interval_end,
+            ))
+        )
+
+        return session.scalars(stmt).unique()

@@ -57,3 +57,15 @@ class Usage(Base):
             .first()
             [0]
         )
+    
+    @classmethod
+    def find_device_last_date(cls, device_id: int) -> date | None:
+        engine = create_engine(os.getenv("DB_URI"))
+        session = Session(engine)
+
+        return (
+            session.query(sa.func.max(cls.usage_date).label("date"))
+            .where(cls.device_id == device_id)
+            .first()
+            [0]
+        )
