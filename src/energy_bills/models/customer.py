@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, date
 from typing import List, Optional, TYPE_CHECKING
 
 import sqlalchemy as sa
@@ -22,8 +22,8 @@ class Customer(Base):
     phone: Mapped[Optional[str]]
     property_owner_id: Mapped[int] = mapped_column(ForeignKey("property_owners.id"))
     aniversary_day: Mapped[int]
-    move_in: Mapped[str]
-    move_out_day: Mapped[Optional[int]]
+    move_in_date: Mapped[date]
+    move_out_date: Mapped[Optional[date]]
     devices: Mapped[str]
     stripe_id: Mapped[Optional[str]]
     created_at: Mapped[datetime] = mapped_column(server_default=sa.func.current_timestamp())
