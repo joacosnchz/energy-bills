@@ -1,10 +1,13 @@
 import os
-from typing import List
+from typing import List, Optional, TYPE_CHECKING
 
 from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Mapped, Session, mapped_column
+from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
 from energy_bills.models.base import Base
+
+if TYPE_CHECKING:
+    from energy_bills.models.customer import Customer
 
 
 class PropertyOwner(Base):
@@ -12,12 +15,14 @@ class PropertyOwner(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     email: Mapped[str]
-    park_id: Mapped[int]
+    park_id: Mapped[Optional[int]]
     kwh_rate: Mapped[float]
-    customers_list_id: Mapped[str]
-    emporia_usr: Mapped[str]
-    emporia_pwd: Mapped[str]
-    stripe_id: Mapped[str]
+    customers_list_id: Mapped[Optional[str]]
+    emporia_usr: Mapped[Optional[str]]
+    emporia_pwd: Mapped[Optional[str]]
+    stripe_id: Mapped[Optional[str]]
+
+    customers: Mapped[List["Customer"]] = relationship(back_populates="property_owner", lazy=True)
 
     @classmethod
     def get_all(cls) -> List["PropertyOwner"]:

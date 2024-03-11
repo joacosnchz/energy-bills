@@ -2,7 +2,7 @@ import os
 from datetime import datetime, date
 from typing import List, Optional, TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, create_engine, select, update
+from sqlalchemy import ForeignKey, create_engine, select
 from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
 from energy_bills.models.base import Base
@@ -23,3 +23,20 @@ class Invoice(Base):
     sent_at: Mapped[Optional[datetime]]
 
     customer: Mapped["Customer"] = relationship(lazy=True)
+
+    @classmethod
+    def create(cls, data: dict) -> None:
+        """Creates invoice only if not exists"""
+
+        engine = create_engine(os.getenv("DB_URI"))
+        with Session(engine) as session:
+            stmt = (
+                select(cls)
+                .where(cls.invoice_date == data["invoice_date"])
+                .where(cls.customer_id == data["customer_id"])
+            )
+            existing = session.scalars(stmt).first()
+
+            if not existing:
+                session.add(cls(**data))
+                session.commit()
