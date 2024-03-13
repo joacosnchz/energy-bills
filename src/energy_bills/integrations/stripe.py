@@ -23,7 +23,7 @@ class Stripe:
         )
 
         if r and "id" in r and "url" in r:
-            return {"id": r["id"], "url": r["url"]}
+            return {"stripe_id": r["id"], "link": r["url"]}
 
     def create_price(self, amount: int, product: str) -> str:
         r = self._send_post(

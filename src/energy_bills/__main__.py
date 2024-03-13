@@ -14,6 +14,7 @@ if __name__ == "__main__":
     if job == "invoices":
         Usages.load()
         Invoices.load()
+        Invoices.generate_links()
     elif job == "customers":
         Customers.load()
     else:

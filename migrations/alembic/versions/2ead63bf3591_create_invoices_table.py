@@ -32,8 +32,8 @@ def upgrade() -> None:
         sa.Column("kwh_consumed", sa.Float, nullable=False),
         sa.Column("kwh_rate", sa.Float, nullable=False),
         sa.Column("customer_id", sa.BigInteger, nullable=False),
-        sa.Column("stripe_id", sa.String(255), nullable=False),
-        sa.Column("link", sa.String(255), nullable=False),
+        sa.Column("stripe_id", sa.String(255), nullable=True),
+        sa.Column("link", sa.String(255), nullable=True),
         sa.Column("sent_at", sa.DateTime, nullable=True),
     )
 

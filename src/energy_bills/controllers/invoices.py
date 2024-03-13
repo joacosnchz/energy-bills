@@ -20,11 +20,8 @@ class Invoices:
         interval_end = Util.compute_daily_interval_end()
         interval_start = Util.compute_monthly_interval_start(interval_end)
 
-        stripe = Stripe()
-        prod_id = cls.get_or_create_stripe_product()
-
         for customer in Customer.get_active_billable_customers(interval_end):
-            logger.info(f"Generating invoices for customer ID: {customer.id} from {interval_start} to {interval_end}")
+            logger.info(f"Loading invoices for customer ID: {customer.id} from {interval_start} to {interval_end}")
 
             emporia = Emporia(
                 username=customer.property_owner.emporia_usr,
@@ -47,10 +44,7 @@ class Invoices:
                 customer_monthly_usage_db += device_monthly_usage_db
 
             customer_monthly_usage = max(customer_monthly_usage_api, customer_monthly_usage_db)
-
             invoice_amount = customer_monthly_usage * customer.property_owner.kwh_rate
-            price_id = stripe.create_price(invoice_amount, prod_id)
-            payment = stripe.create_payment_link(price_id, quantity=1)
 
             Invoice.create({
                 "invoice_date": interval_end,
@@ -58,11 +52,28 @@ class Invoices:
                 "kwh_consumed": customer_monthly_usage,
                 "kwh_rate": customer.property_owner.kwh_rate,
                 "amount": invoice_amount,
-                "stripe_id": payment["id"],
-                "link": payment["url"],
             })
 
         logger.info(f"Invoices load completed with TS {interval_end}")
+
+    @classmethod
+    def generate_links(cls):
+        """Creates stripe payment links from loaded invoices"""
+
+        stripe = Stripe()
+        prod_id = cls.get_or_create_stripe_product()
+
+        for invoice in Invoice.get_all_without_link():
+            logger.info(f"Generating stripe invoice for ID: {invoice.id}")
+            price_id = stripe.create_price(invoice.amount, prod_id)
+            payment_data = stripe.create_payment_link(price_id, quantity=1)
+
+            Invoice.update_stripe_data({
+                "id": invoice.id,
+                **payment_data
+            })
+
+        logger.info("Stripe invoices generated")
 
     @classmethod
     def get_or_create_stripe_product(cls) -> str:

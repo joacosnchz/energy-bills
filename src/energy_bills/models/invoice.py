@@ -1,8 +1,8 @@
 import os
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import ForeignKey, create_engine, select
+from sqlalchemy import ForeignKey, create_engine, select, update
 from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
 from energy_bills.models.base import Base
@@ -19,8 +19,8 @@ class Invoice(Base):
     kwh_consumed: Mapped[float]
     kwh_rate: Mapped[float]
     customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"))
-    stripe_id: Mapped[str]
-    link: Mapped[str]
+    stripe_id: Mapped[Optional[str]]
+    link: Mapped[Optional[str]]
     sent_at: Mapped[Optional[datetime]]
 
     customer: Mapped["Customer"] = relationship(lazy=True)
@@ -41,3 +41,30 @@ class Invoice(Base):
             if not existing:
                 session.add(cls(**data))
                 session.commit()
+
+    @classmethod
+    def update_stripe_data(cls, data: dict) -> None:
+        """Updates invoice based on ID"""
+
+        engine = create_engine(os.getenv("DB_URI"))
+        with Session(engine) as session:
+            stmt = (
+                update(cls)
+                .where(cls.id == data["id"])
+                .values(**data)
+            )
+            session.execute(stmt)
+            session.commit()
+
+    @classmethod
+    def get_all_without_link(cls) -> List["Invoice"]:
+        """Get all invoices without payment link"""
+
+        engine = create_engine(os.getenv("DB_URI"))
+        session = Session(engine)
+        stmt = (
+            select(cls)
+            .where(cls.stripe_id.is_(None))
+        )
+
+        return session.scalars(stmt).unique()
