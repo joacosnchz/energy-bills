@@ -10,7 +10,7 @@ class Util:
         interval_end = datetime.strptime(os.getenv("RUN_TS", default_ts), "%Y-%m-%d")
 
         return interval_end
-    
+
     @classmethod
     def compute_monthly_interval_start(cls, interval_end: datetime) -> datetime:
         ts_day = int(interval_end.strftime("%d").replace("0", ""))

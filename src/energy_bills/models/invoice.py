@@ -1,6 +1,6 @@
 import os
-from datetime import datetime, date
-from typing import List, Optional, TYPE_CHECKING
+from datetime import date, datetime
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import ForeignKey, create_engine, select
 from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
@@ -9,6 +9,7 @@ from energy_bills.models.base import Base
 
 if TYPE_CHECKING:
     from energy_bills.models.customer import Customer
+
 
 class Invoice(Base):
     __tablename__ = "invoices"

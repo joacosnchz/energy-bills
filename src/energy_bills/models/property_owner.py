@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Mapped, Session, mapped_column, relationship

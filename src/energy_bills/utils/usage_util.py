@@ -1,5 +1,5 @@
 from datetime import datetime
-from energy_bills.models.customer import Customer
+
 from energy_bills.integrations.emporia import Emporia
 
 

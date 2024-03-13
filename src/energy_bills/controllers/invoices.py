@@ -3,10 +3,10 @@ import logging
 from energy_bills.integrations.emporia import Emporia
 from energy_bills.integrations.stripe import Stripe
 from energy_bills.models.customer import Customer
+from energy_bills.models.invoice import Invoice
 from energy_bills.models.usage import Usage
 from energy_bills.utils.usage_util import UsageUtil
 from energy_bills.utils.util import Util
-from energy_bills.models.invoice import Invoice
 
 logger = logging.getLogger(__name__)
 

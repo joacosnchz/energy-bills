@@ -1,6 +1,6 @@
 import os
-from datetime import datetime, date
-from typing import List, Optional, TYPE_CHECKING
+from datetime import date, datetime
+from typing import TYPE_CHECKING, List, Optional
 
 import sqlalchemy as sa
 from sqlalchemy import ForeignKey, create_engine, select, update

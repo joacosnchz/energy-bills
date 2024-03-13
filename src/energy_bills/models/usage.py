@@ -2,7 +2,7 @@ import os
 from datetime import date, datetime
 
 import sqlalchemy as sa
-from sqlalchemy import create_engine, select, update
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from energy_bills.models.base import Base
@@ -33,7 +33,7 @@ class Usage(Base):
             if not existing:
                 session.add(cls(**data))
                 session.commit()
-    
+
     @classmethod
     def compute_device_usage(cls, device_id: int, start: datetime, end: datetime) -> float:
         engine = create_engine(os.getenv("DB_URI"))
@@ -47,7 +47,7 @@ class Usage(Base):
             .first()
             [0]
         )
-    
+
     @classmethod
     def find_device_last_date(cls, device_id: int) -> date | None:
         engine = create_engine(os.getenv("DB_URI"))
