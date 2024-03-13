@@ -1,5 +1,7 @@
 import logging
+from datetime import datetime
 
+from energy_bills.integrations.email import Email
 from energy_bills.integrations.emporia import Emporia
 from energy_bills.integrations.stripe import Stripe
 from energy_bills.models.customer import Customer
@@ -68,12 +70,37 @@ class Invoices:
             price_id = stripe.create_price(invoice.amount, prod_id)
             payment_data = stripe.create_payment_link(price_id, quantity=1)
 
-            Invoice.update_stripe_data({
+            Invoice.update_by_id({
                 "id": invoice.id,
                 **payment_data
             })
 
         logger.info("Stripe invoices generated")
+
+    @classmethod
+    def send_invoices(cls):
+        """Sends stripe payment link by email"""
+
+        for invoice in Invoice.get_all_not_sent():
+            logger.info(f"Sending invoice ID: {invoice.id}")
+            Email.send(
+                subject="RV Park Billing",
+                recipient=invoice.customer.email,
+                body=f"""
+                Hello,
+
+                This is the invoice for the energy usage on the RV Park.
+                Please use the following link for payment: {invoice.link}
+
+                Greetings
+                """
+            )
+            Invoice.update_by_id({
+                "id": invoice.id,
+                "sent_at": datetime.now(),
+            })
+
+        logger.info("Invoices sent")
 
     @classmethod
     def get_or_create_stripe_product(cls) -> str:

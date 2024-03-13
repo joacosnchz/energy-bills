@@ -43,7 +43,7 @@ class Invoice(Base):
                 session.commit()
 
     @classmethod
-    def update_stripe_data(cls, data: dict) -> None:
+    def update_by_id(cls, data: dict) -> None:
         """Updates invoice based on ID"""
 
         engine = create_engine(os.getenv("DB_URI"))
@@ -65,6 +65,19 @@ class Invoice(Base):
         stmt = (
             select(cls)
             .where(cls.stripe_id.is_(None))
+        )
+
+        return session.scalars(stmt).unique()
+
+    @classmethod
+    def get_all_not_sent(cls) -> List["Invoice"]:
+        """Get all invoices not sent to customer"""
+
+        engine = create_engine(os.getenv("DB_URI"))
+        session = Session(engine)
+        stmt = (
+            select(cls)
+            .where(cls.sent_at.is_(None))
         )
 
         return session.scalars(stmt).unique()
