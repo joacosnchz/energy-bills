@@ -44,7 +44,7 @@ class Usages:
                     device["deviceGid"], device["channels"], interval_start, interval_end, emporia
                 )
 
-                Usage.upsert({
+                Usage.create({
                     "usage_date": interval_end,
                     "device_id": device["deviceGid"],
                     "kwh_consumed": device_daily_usage,
@@ -57,10 +57,10 @@ class Usages:
         last_date = Usage.find_device_last_date(device["deviceGid"])
         if last_date:
             if last_date >= interval_end.date():
-                # Previous day was already processed
+                # Interval end date was already processed
                 last_date = interval_end
             else:
-                # Previous day was not processed yet
+                # Interval end date was not processed yet
                 last_date = last_date + timedelta(days=1)
         else:
             # Customer does not have any usages loaded

@@ -18,8 +18,8 @@ class Usage(Base):
     updated_at: Mapped[datetime] = mapped_column(server_default=sa.func.current_timestamp())
 
     @classmethod
-    def upsert(cls, data: dict) -> None:
-        """Creates customer if not exists, updates it otherwise"""
+    def create(cls, data: dict) -> None:
+        """Creates usage data only if not exists"""
 
         engine = create_engine(os.getenv("DB_URI"))
         with Session(engine) as session:
@@ -32,16 +32,6 @@ class Usage(Base):
 
             if not existing:
                 session.add(cls(**data))
-                session.commit()
-            else:
-                existing.updated_at = datetime.now()
-                stmt = (
-                    update(cls)
-                    .where(cls.device_id == data["device_id"])
-                    .where(cls.usage_date == data["usage_date"])
-                    .values(**data)
-                )
-                session.execute(stmt)
                 session.commit()
     
     @classmethod
