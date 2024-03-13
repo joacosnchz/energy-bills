@@ -83,3 +83,22 @@ class Customer(Base):
         )
 
         return session.scalars(stmt).unique()
+
+    @classmethod
+    def get_active_billable_customers(cls, interval_end: date) -> List["Customer"]:
+        """Get customers using energy on a date"""
+        ts_day = int(interval_end.strftime("%d").replace("0", ""))
+
+        engine = create_engine(os.getenv("DB_URI"))
+        session = Session(engine)
+        stmt = (
+            select(cls)
+            .where(cls.aniversary_day == ts_day)
+            .where(cls.move_in_date <= interval_end)
+            .where(sa.or_(
+                cls.move_out_date.is_(None),
+                cls.move_out_date >= interval_end,
+            ))
+        )
+
+        return session.scalars(stmt).unique()

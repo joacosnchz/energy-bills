@@ -13,7 +13,7 @@ class Stripe:
     def __init__(self):
         self.key = os.getenv("STRIPE_KEY")
 
-    def create_payment_link(self, price: str, quantity: int):
+    def create_payment_link(self, price: str, quantity: int) -> dict:
         r = self._send_post(
             "/payment_links",
             data={
@@ -22,15 +22,15 @@ class Stripe:
             }
         )
 
-        if r and "url" in r:
-            return r["url"]
+        if r and "id" in r and "url" in r:
+            return {"id": r["id"], "url": r["url"]}
 
     def create_price(self, amount: int, product: str) -> str:
         r = self._send_post(
             "/prices",
             data={
                 "currency": "usd",
-                "unit_amount": amount * 100,  # in cents
+                "unit_amount": int(amount) * 100,  # in cents
                 "product": product,
             }
         )

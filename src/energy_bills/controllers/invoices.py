@@ -23,21 +23,19 @@ class Invoices:
         stripe = Stripe()
         prod_id = cls.get_or_create_stripe_product()
 
-        # TODO: Filter customers
-        for customer in Customer.get_all():
-            logger.info(f"Generating invoices for customer ID: {customer.id}")
+        for customer in Customer.get_active_billable_customers(interval_end):
+            logger.info(f"Generating invoices for customer ID: {customer.id} from {interval_start} to {interval_end}")
 
             emporia = Emporia(
                 username=customer.property_owner.emporia_usr,
                 password=customer.property_owner.emporia_pwd,
             )
             devices = emporia.get_devices()
-            customer_devices = customer.devices.split(",")
-            devices = [d for d in devices if d["deviceGid"] in customer_devices]
+            customer_devices = customer.filter_devices(devices)
 
             customer_monthly_usage_api = 0.0
             customer_monthly_usage_db = 0.0
-            for device in devices:
+            for device in customer_devices:
                 device_monthly_usage_api = UsageUtil.compute_device_channel_usage(
                     device["deviceGid"], device["channels"], interval_start, interval_end, emporia
                 )
@@ -52,7 +50,7 @@ class Invoices:
 
             invoice_amount = customer_monthly_usage * customer.property_owner.kwh_rate
             price_id = stripe.create_price(invoice_amount, prod_id)
-            link = stripe.create_payment_link(price_id, quantity=1)
+            payment = stripe.create_payment_link(price_id, quantity=1)
 
             Invoice.create({
                 "invoice_date": interval_end,
@@ -60,14 +58,14 @@ class Invoices:
                 "kwh_consumed": customer_monthly_usage,
                 "kwh_rate": customer.property_owner.kwh_rate,
                 "amount": invoice_amount,
-                "stripe_id": "",
-                "link": link,
+                "stripe_id": payment["id"],
+                "link": payment["url"],
             })
 
         logger.info(f"Invoices load completed with TS {interval_end}")
 
     @classmethod
-    def get_or_create_stripe_product(self) -> str:
+    def get_or_create_stripe_product(cls) -> str:
         stripe = Stripe()
         stripe_product_name = "Energy Service"
         prod_id = stripe.search_product(name=stripe_product_name)
