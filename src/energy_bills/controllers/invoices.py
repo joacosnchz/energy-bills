@@ -81,8 +81,11 @@ class Invoices:
     def send_invoices(cls):
         """Sends stripe payment link by email"""
 
+        owners_notifications = {}
+
         for invoice in Invoice.get_all_not_sent():
             logger.info(f"Sending invoice ID: {invoice.id}")
+
             Email.send(
                 subject="RV Park Billing",
                 recipient=invoice.customer.email,
@@ -95,10 +98,33 @@ class Invoices:
                 Greetings
                 """
             )
+
             Invoice.update_by_id({
                 "id": invoice.id,
                 "sent_at": datetime.now(),
             })
+
+            if not invoice.customer.property_owner.email in owners_notifications:
+                owners_notifications[invoice.customer.property_owner.email] = {
+                    "invoices": [invoice]
+                }
+            else:
+                owners_notifications[invoice.customer.property_owner.email]["invoices"].append(invoice)
+
+        for owner_email, notifications in owners_notifications.items():
+            message = "Dear Property Owner, today the following invoices were sent:\n"
+            for invoice in notifications["invoices"]:
+                message += (
+                    f"{invoice.customer.first_name} {invoice.customer.last_name} - "
+                    f"Site {invoice.customer.pad_id} - Anniversary {invoice.customer.aniversary_day} - "
+                    f"${invoice.amount}\n"
+                )
+
+            Email.send(
+                subject="RV Park Billing",
+                recipient=owner_email,
+                body=message,
+            )
 
         logger.info("Invoices sent")
 
