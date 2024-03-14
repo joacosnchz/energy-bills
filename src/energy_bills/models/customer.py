@@ -93,8 +93,11 @@ class Customer(Base):
         session = Session(engine)
         stmt = (
             select(cls)
-            .where(cls.aniversary_day == ts_day)
             .where(cls.move_in_date <= interval_end)
+            .where(sa.or_(
+                cls.aniversary_day == ts_day,
+                cls.move_out_date == interval_end.strftime("%Y-%m-%d")
+            ))
             .where(sa.or_(
                 cls.move_out_date.is_(None),
                 cls.move_out_date >= interval_end,

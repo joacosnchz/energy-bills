@@ -104,7 +104,7 @@ class Invoices:
                 "sent_at": datetime.now(),
             })
 
-            if not invoice.customer.property_owner.email in owners_notifications:
+            if invoice.customer.property_owner.email not in owners_notifications:
                 owners_notifications[invoice.customer.property_owner.email] = {
                     "invoices": [invoice]
                 }
@@ -117,7 +117,7 @@ class Invoices:
                 message += (
                     f"{invoice.customer.first_name} {invoice.customer.last_name} - "
                     f"Site {invoice.customer.pad_id} - Anniversary {invoice.customer.aniversary_day} - "
-                    f"${invoice.amount}\n"
+                    f"${invoice.amount:.0f}\n"
                 )
 
             Email.send(
