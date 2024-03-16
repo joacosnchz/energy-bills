@@ -30,7 +30,7 @@ class Stripe:
             "/prices",
             data={
                 "currency": "usd",
-                "unit_amount": int(amount) * 100,  # in cents
+                "unit_amount": amount,  # in cents
                 "product": product,
             }
         )

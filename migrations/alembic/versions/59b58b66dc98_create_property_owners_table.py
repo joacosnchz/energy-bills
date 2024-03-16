@@ -30,11 +30,12 @@ def upgrade() -> None:
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("email", sa.String(255), nullable=False, unique=True),
         sa.Column("park_id", sa.Integer, nullable=True),
-        sa.Column("kwh_rate", sa.Float, nullable=False),
+        sa.Column("kwh_rate", sa.Integer, nullable=False),
         sa.Column("customers_list_id", sa.String(255), nullable=True),
         sa.Column("emporia_usr", sa.String(255), nullable=True),
         sa.Column("emporia_pwd", sa.String(255), nullable=True),
         sa.Column("stripe_id", sa.String(255), nullable=True),
+        sa.Column("stripe_price_id", sa.String(255), nullable=True),
     )
 
 

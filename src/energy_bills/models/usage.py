@@ -12,7 +12,7 @@ class Usage(Base):
     __tablename__ = "usage"
     id: Mapped[int] = mapped_column(primary_key=True)
     usage_date: Mapped[date] = mapped_column(server_default=sa.func.current_date())
-    kwh_consumed: Mapped[float]
+    kwh_consumed: Mapped[int]
     device_id: Mapped[int]
     created_at: Mapped[datetime] = mapped_column(server_default=sa.func.current_timestamp())
     updated_at: Mapped[datetime] = mapped_column(server_default=sa.func.current_timestamp())

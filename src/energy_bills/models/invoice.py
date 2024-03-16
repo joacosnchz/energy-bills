@@ -16,8 +16,8 @@ class Invoice(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     invoice_date: Mapped[date]
     amount: Mapped[float]
-    kwh_consumed: Mapped[float]
-    kwh_rate: Mapped[float]
+    kwh_consumed: Mapped[int]
+    kwh_rate: Mapped[int]
     customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"))
     stripe_id: Mapped[Optional[str]]
     link: Mapped[Optional[str]]

@@ -6,6 +6,7 @@ from energy_bills.integrations.emporia import Emporia
 from energy_bills.integrations.stripe import Stripe
 from energy_bills.models.customer import Customer
 from energy_bills.models.invoice import Invoice
+from energy_bills.models.property_owner import PropertyOwner
 from energy_bills.models.usage import Usage
 from energy_bills.utils.usage_util import UsageUtil
 from energy_bills.utils.util import Util
@@ -46,7 +47,7 @@ class Invoices:
                 customer_monthly_usage_db += device_monthly_usage_db
 
             customer_monthly_usage = max(customer_monthly_usage_api, customer_monthly_usage_db)
-            invoice_amount = customer_monthly_usage * customer.property_owner.kwh_rate
+            invoice_amount = customer_monthly_usage * customer.property_owner.kwh_rate / 100
 
             Invoice.create({
                 "invoice_date": interval_end,
@@ -67,8 +68,16 @@ class Invoices:
 
         for invoice in Invoice.get_all_without_link():
             logger.info(f"Generating stripe invoice for ID: {invoice.id}")
-            price_id = stripe.create_price(invoice.amount, prod_id)
-            payment_data = stripe.create_payment_link(price_id, quantity=1)
+
+            price_id = invoice.customer.property_owner.stripe_price_id
+            if not price_id:
+                price_id = stripe.create_price(invoice.kwh_rate, prod_id)
+                PropertyOwner.update_by_id({
+                    "id": invoice.customer.property_owner_id,
+                    "stripe_price_id": price_id,
+                })
+
+            payment_data = stripe.create_payment_link(price_id, quantity=invoice.kwh_consumed)
 
             Invoice.update_by_id({
                 "id": invoice.id,

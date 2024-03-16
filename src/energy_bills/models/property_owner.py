@@ -1,7 +1,7 @@
 import os
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, update
 from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
 from energy_bills.models.base import Base
@@ -16,11 +16,12 @@ class PropertyOwner(Base):
     name: Mapped[str]
     email: Mapped[str]
     park_id: Mapped[Optional[int]]
-    kwh_rate: Mapped[float]
+    kwh_rate: Mapped[int]
     customers_list_id: Mapped[Optional[str]]
     emporia_usr: Mapped[Optional[str]]
     emporia_pwd: Mapped[Optional[str]]
     stripe_id: Mapped[Optional[str]]
+    stripe_price_id: Mapped[Optional[str]]
 
     customers: Mapped[List["Customer"]] = relationship(back_populates="property_owner", lazy=True)
 
@@ -31,3 +32,17 @@ class PropertyOwner(Base):
         stmt = select(PropertyOwner)
 
         return session.scalars(stmt).unique()
+
+    @classmethod
+    def update_by_id(cls, data: dict) -> None:
+        """Updates invoice based on ID"""
+
+        engine = create_engine(os.getenv("DB_URI"))
+        with Session(engine) as session:
+            stmt = (
+                update(cls)
+                .where(cls.id == data["id"])
+                .values(**data)
+            )
+            session.execute(stmt)
+            session.commit()
