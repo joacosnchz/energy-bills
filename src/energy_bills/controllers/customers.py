@@ -31,7 +31,6 @@ class Customers:
             rows_before_quality_checks = len(df)
             df = cls.filter_invalid_rows(df)
             df = cls.replace_empty_strings(df)
-            df = cls.change_data_types(df)
 
             filtered_rows = rows_before_quality_checks - len(df)
             logger.info(f"Filtered {filtered_rows} invalid rows")
@@ -50,7 +49,8 @@ class Customers:
         # Filter invalid types
         int_columns = ["pad_id", "aniversary_day"]
         for column in int_columns:
-            df = df[df[column].apply(lambda x: x.isnumeric())]
+            df = df[pd.to_numeric(df[column], downcast="integer", errors="coerce").notna()]
+            df[column] = df[column].astype(int)
 
         # Validates devices column
         pattern = r"^([0-9](,)?)+$"
@@ -61,6 +61,10 @@ class Customers:
         # Validates move_in_date column
         df = df[pd.to_datetime(df["move_in_date"], format="%m/%d/%Y", errors="coerce").notna()]
 
+        # Validates aniversary_day
+        df = df[df["aniversary_day"] <= 31]
+        df = df[df["aniversary_day"] > 0]
+
         return df
 
     @classmethod
@@ -68,13 +72,6 @@ class Customers:
         df["move_out_date"] = df["move_out_date"].replace("", None)
         df["phone"] = df["phone"].replace("", None)
         df["devices"] = df["devices"].replace("", None)
-
-        return df
-
-    @classmethod
-    def change_data_types(cls, df: DataFrame) -> DataFrame:
-        df["pad_id"] = df["pad_id"].astype(int)
-        df["aniversary_day"] = df["aniversary_day"].astype(int)
 
         return df
 
